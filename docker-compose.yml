@@ -1,0 +1,45 @@
+services:
+  compass:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compass
+    ports:
+      - "8080:80"
+    volumes:
+      # Note: Not read-only to allow chmod for worker process access
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - COMPASS_NETWORK=mesh
+      - COMPASS_HTTP_PORT=80
+    # Allow worker process to send reload signal to master
+    cap_add:
+      - KILL
+    networks:
+      - mesh
+    restart: unless-stopped
+
+  # Test service - whoami
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    labels:
+      - "compass=whoami.local.test"
+      - "compass.reverse_proxy={{upstreams 80}}"
+    networks:
+      - mesh
+
+  # Additional test service - nginx
+  nginx-test:
+    image: nginx:alpine
+    container_name: nginx-test
+    labels:
+      - "compass=nginx.local.test"
+      - "compass.reverse_proxy={{upstreams 80}}"
+    networks:
+      - mesh
+
+networks:
+  mesh:
+    name: mesh
+    driver: bridge

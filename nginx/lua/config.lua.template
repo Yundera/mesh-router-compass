@@ -1,0 +1,7 @@
+-- config.lua - Generated from template
+-- Configuration loaded from environment variables
+
+return {
+    compass_network = "${COMPASS_NETWORK}",
+    compass_http_port = ${COMPASS_HTTP_PORT}
+}
